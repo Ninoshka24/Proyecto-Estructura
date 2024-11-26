@@ -1,0 +1,180 @@
+#include <iostream>
+#include <string>
+
+struct Producto {
+    int id;
+    std::string nombre;
+    int cantidad;
+    float precio;
+    Producto* siguiente;
+
+    Producto(int i, const std::string& n, int c, float p)
+        : id(i), nombre(n), cantidad(c), precio(p), siguiente(nullptr) {}
+};
+
+class Inventario {
+private:
+    Producto* cabeza;
+
+public:
+    Inventario() : cabeza(nullptr) {}
+
+    // Agregar producto
+    void agregarProducto(int id, const std::string& nombre, int cantidad, float precio) {
+        Producto* nuevo = new Producto(id, nombre, cantidad, precio);
+        nuevo->siguiente = cabeza;
+        cabeza = nuevo;
+        std::cout << "Producto agregado: " << nombre << "\n";
+    }
+
+    // Buscar producto por ID
+    Producto* buscarProducto(int id) {
+        Producto* actual = cabeza;
+        while (actual) {
+            if (actual->id == id) return actual;
+            actual = actual->siguiente;
+        }
+        return nullptr;
+    }
+
+    // Actualizar producto
+    void actualizarProducto(int id, int nuevaCantidad, float nuevoPrecio) {
+        Producto* producto = buscarProducto(id);
+        if (producto) {
+            producto->cantidad = nuevaCantidad;
+            producto->precio = nuevoPrecio;
+            std::cout << "Producto actualizado: " << producto->nombre << "\n";
+        } else {
+            std::cout << "Producto no encontrado.\n";
+        }
+    }
+
+    // Eliminar producto
+    void eliminarProducto(int id) {
+        Producto* actual = cabeza;
+        Producto* anterior = nullptr;
+        while (actual) {
+            if (actual->id == id) {
+                if (anterior) {
+                    anterior->siguiente = actual->siguiente;
+                } else {
+                    cabeza = actual->siguiente;
+                }
+                delete actual;
+                std::cout << "Producto eliminado.\n";
+                return;
+            }
+            anterior = actual;
+            actual = actual->siguiente;
+        }
+        std::cout << "Producto no encontrado.\n";
+    }
+
+    // Mostrar inventario
+    void mostrarInventario() {
+        Producto* actual = cabeza;
+        if (!actual) {
+            std::cout << "Inventario vacío.\n";
+            return;
+        }
+        while (actual) {
+            std::cout << "ID: " << actual->id
+                      << ", Nombre: " << actual->nombre
+                      << ", Cantidad: " << actual->cantidad
+                      << ", Precio: $" << actual->precio << "\n";
+            actual = actual->siguiente;
+        }
+    }
+
+    // Ordenar inventario por ID usando Insertion Sort
+    void ordenarPorID() {
+        if (!cabeza) return;
+        Producto* actual = cabeza->siguiente;
+        while (actual) {
+            Producto* anterior = actual;
+            while (anterior != cabeza && anterior->id > actual->id) {
+                anterior = anterior->siguiente;
+            }
+            // Mover actual a su posición correcta
+            Producto* temp = actual->siguiente;
+            actual->siguiente = anterior;
+            if (anterior != actual) {
+                intercambiarNodos(anterior, actual);
+            }
+            actual = temp;
+        }
+    }
+
+    // Función auxiliar para intercambiar dos nodos
+    void intercambiarNodos(Producto* nodo1, Producto* nodo2) {
+        Producto* temp = nodo2->siguiente;
+        nodo2->siguiente = nodo1;
+        nodo1->siguiente = temp;
+    }
+
+    // Destructor para liberar la memoria
+    ~Inventario() {
+        while (cabeza) {
+            Producto* temp = cabeza;
+            cabeza = cabeza->siguiente;
+            delete temp;
+        }
+    }
+};
+
+int main() {
+    Inventario tienda;
+    int opcion;
+
+    do {
+        std::cout << "\nMenú:\n";
+        std::cout << "1. Agregar producto\n";
+        std::cout << "2. Buscar producto\n";
+        std::cout << "3. Actualizar producto\n";
+        std::cout << "4. Eliminar producto\n";
+        std::cout << "5. Mostrar inventario\n";
+        std::cout << "6. Ordenar inventario\n";
+        std::cout << "7. Salir\n";
+        std::cout << "Ingrese una opción: ";
+        std::cin >> opcion;
+
+        switch (opcion) {
+            case 1: {
+                int id, cantidad;
+                std::string nombre;
+                float precio;
+                std::cout << "Ingrese los datos del producto:\n";
+                std::cout << "ID: "; std::cin >> id;
+                std::cout << "Nombre: "; std::cin >> nombre;
+                std::cout << "Cantidad: "; std::cin >> cantidad;
+                std::cout << "Precio: "; std::cin >> precio;
+                tienda.agregarProducto(id, nombre, cantidad, precio);
+                break;
+            }
+            case 2: {
+                int id;
+                std::cout << "Ingrese el ID del producto a buscar: ";
+                std::cin >> id;
+                Producto* producto = tienda.buscarProducto(id);
+                if (producto) {
+                    std::cout << "Producto encontrado:\n";
+                    std::cout << "ID: " << producto->id << "\n";
+                    std::cout << "Nombre: " << producto->nombre << "\n";
+                    std::cout << "Cantidad: " << producto->cantidad << "\n";
+                    std::cout << "Precio: $" << producto->precio << "\n";
+                } else {
+                    std::cout << "Producto no encontrado.\n";
+                }
+                break;
+            }
+            // ... (casos para las demás opciones, similares a los casos 1 y 2)
+            case 7:
+                std::cout << "Saliendo del programa.\n";
+                break;
+            default:
+                std::cout << "Opción inválida.\n";
+        }
+    } while (opcion != 7);
+
+    return 0;
+}
